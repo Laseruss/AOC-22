@@ -11,48 +11,43 @@ import (
 func main() {
 	cycle := 0
 	register := 1
-	screen := [6][]string{}
-	for i := range screen {
-		screen[i] = make([]string, 40)
-	}
+	screen := [6][40]string{}
 
-	file, _ := os.Open("test.txt")
+	file, _ := os.Open("input.txt")
 	scanner := bufio.NewScanner(file)
 
 	for scanner.Scan() {
-		if cycle >= 240 {
-			break
-		}
 		words := strings.Fields(scanner.Text())
-		col := cycle % 40
-		row := cycle / 40
 
 		if words[0] == "noop" {
-			if cycle == register-1 || cycle == register || cycle == register+1 {
+			row := cycle / 40
+			col := cycle % 40
+			if col == register-1 || col == register || col == register+1 {
 				screen[row][col] = "#"
 			} else {
 				screen[row][col] = "."
 			}
 			cycle++
-			continue
-		}
-
-		reg, _ := strconv.Atoi(words[1])
-		if col == register-1 || col == register || col == register+1 {
-			screen[row][col] = "#"
 		} else {
-			screen[row][col] = "."
+			row := cycle / 40
+			col := cycle % 40
+			if col == register-1 || col == register || col == register+1 {
+				screen[row][col] = "#"
+			} else {
+				screen[row][col] = "."
+			}
+			cycle++
+			row = cycle / 40
+			col = cycle % 40
+			if col == register-1 || col == register || col == register+1 {
+				screen[row][col] = "#"
+			} else {
+				screen[row][col] = "."
+			}
+			reg, _ := strconv.Atoi(words[1])
+			register += reg
+			cycle++
 		}
-		cycle++
-		col = cycle % 40
-		row = cycle / 40
-		if col == register-1 || col == register || col == register+1 {
-			screen[row][col] = "#"
-		} else {
-			screen[row][col] = "."
-		}
-		cycle++
-		register += reg
 
 	}
 
