@@ -23,7 +23,7 @@ func main() {
 	inputRows := bytes.Split(input, []byte("\n"))
 	inputRows = inputRows[:len(inputRows)-1]
 
-	graph, start, end := buildGraph(&inputRows)
+	graph, _, end := buildGraph(&inputRows)
 
 	for i, row := range graph {
 		for j, vertex := range row {
@@ -57,30 +57,35 @@ func main() {
 		}
 	}
 
-	currentNode := start
-	unvisitedNodes := map[*vertex]struct{}{
-		currentNode: {},
-	}
-	visited := map[*vertex]struct{}{}
+	startingPoints := findLowestPoints(&graph)
 
-	for len(unvisitedNodes) > 0 {
-		for _, vertice := range currentNode.neighbors {
-			if _, ok := visited[vertice]; !ok {
-				unvisitedNodes[vertice] = struct{}{}
-			}
-
-			cost := currentNode.cost + 1
-			if cost < vertice.cost {
-				vertice.cost = cost
-			}
+	for _, start := range startingPoints {
+		currentNode := start
+		currentNode.cost = 0
+		unvisitedNodes := map[*vertex]struct{}{
+			currentNode: {},
 		}
+		visited := map[*vertex]struct{}{}
 
-		visited[currentNode] = struct{}{}
-		delete(unvisitedNodes, currentNode)
+		for len(unvisitedNodes) > 0 {
+			for _, vertice := range currentNode.neighbors {
+				if _, ok := visited[vertice]; !ok {
+					unvisitedNodes[vertice] = struct{}{}
+				}
 
-		currentNode, err = findLowest(unvisitedNodes)
-		if err != nil {
-			break
+				cost := currentNode.cost + 1
+				if cost < vertice.cost {
+					vertice.cost = cost
+				}
+			}
+
+			visited[currentNode] = struct{}{}
+			delete(unvisitedNodes, currentNode)
+
+			currentNode, err = findLowest(unvisitedNodes)
+			if err != nil {
+				break
+			}
 		}
 	}
 
@@ -119,6 +124,20 @@ func findLowest(vertices map[*vertex]struct{}) (*vertex, error) {
 	}
 
 	return minV, nil
+}
+
+func findLowestPoints(input *[][]vertex) []*vertex {
+	res := []*vertex{}
+
+	for i := range *input {
+		for j := range (*input)[i] {
+			if (*input)[i][j].value == 'a' || (*input)[i][j].value == 'S' {
+				res = append(res, &(*input)[i][j])
+			}
+		}
+	}
+
+	return res
 }
 
 func buildGraph(input *[][]byte) ([][]vertex, *vertex, *vertex) {
